@@ -65,27 +65,32 @@ sequence ::= expression:e1 SEMI sequence:e2 {: RESULT = new Node(NodeType.POINT_
 
 // une expession est soit une affectation ,une              
 expression ::= expr:e {: RESULT = e; :}
-             | LET IDENT:nom EGAL expr:e    {: RESULT = new Node(NodeType.AFFECTATION, e); :}
-             | WHILE expr:cond DO expression:e 
-             | IF expr:cond THEN expression:a1 ELSE expression:a2 
+             | LET IDENT:nom EGAL expr:e    {: RESULT = new Node(NodeType.AFFECTATION, new Node(NodeType.IDENT,nom), e); :}
+             | WHILE expr:cond DO expression:e  {: RESULT = new Node(NodeType.WHILE, cond, e); :}
+             | IF expr:cond THEN expression:a1 ELSE expression:a2 {: RESULT = new Node(NodeType.IF, cond,
+                                                                                        new Node(NodeType.ACTIONS,
+                                                                                            new Node(NodeType.THEN, a1),
+                                                                                            new Node(NodeType.ELSE, a2)
+                                                                                         )
+                                                                                       ); :}
              | error // reprise d'erreurs
              ;
 
 // expression arithmetiques et logiques 
-expr ::= NOT:op expr:e
-       | expr:e1 AND expr:e2
-       | expr:e1 OR expr:e2
-       | expr:e1 EGAL expr:e2
-       | expr:e1 GT expr:e2
-       | expr:e1 GTE expr:e2
+expr ::= NOT:op expr:e          {: RESULT = new Node(NodeType.NOT, e, null) ; :}
+       | expr:e1 AND expr:e2    {: RESULT = new Node(NodeType.AND, e1, e2) ; :}
+       | expr:e1 OR expr:e2     {: RESULT = new Node(NodeType.OR, e1, e2) ; :}
+       | expr:e1 EGAL expr:e2   {: RESULT = new Node(NodeType.EGAL, e1, e2) ; :}
+       | expr:e1 GT expr:e2     {: RESULT = new Node(NodeType.GT, e1, e2) ; :}
+       | expr:e1 GTE expr:e2    {: RESULT = new Node(NodeType.GTE, e1, e2) ; :}
        | expr:e1 PLUS expr:e2   {: RESULT = new Node(NodeType.PLUS, e1, e2) ; :}
        | expr:e1 MOINS expr:e2  {: RESULT = new Node(NodeType.MOINS, e1, e2) ; :}
        | expr:e1 MUL expr:e2    {: RESULT = new Node(NodeType.MULT, e1, e2) ; :}
        | expr:e1 DIV expr:e2    {: RESULT = new Node(NodeType.DIV, e1, e2) ; :}
        | expr:e1 MOD expr:e2    {: RESULT = new Node(NodeType.MOD, e1, e2) ; :}
        | MOINS expr:e           {: RESULT = new Node(NodeType.MOINS_UNAIRE, e, null); :}
-       | OUTPUT expr:e
-       | INPUT
+       | OUTPUT expr:e          {: RESULT  = new Node(NodeType.OUTPUT, e); :}
+       | INPUT                  {: RESULT  = new Node(NodeType.INPUT); :}
        | NIL          {: RESULT = null; :}
        | ENTIER:n     {: RESULT = new Node(NodeType.ENTIER, n); :}
        | IDENT:id     {: RESULT = new Node(NodeType.IDENT, id); :}

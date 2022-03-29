@@ -69,6 +69,8 @@ public class Node {
         if(value != null){
             string += value;
         } else if(fg != null && fd != null) {
+            if (type == NodeType.POINT_VIRGULE)
+                string += "\n";
             string += "(" + this.type + " " + this.fg + " " + this.fd + ")";
         } else if(fg != null && fd == null) {
                 string += this.type + " " + this.fg;
