@@ -1,5 +1,7 @@
 # TP Compilation : Génération d'arbres abstraits
 
+## Groupe : _Willy Gentet_
+
 L'objectif du TP est d'utiliser les outils JFlex et CUP pour générer des arbres abstraits correspondant à un sous ensemble du langage **λ-ada**.
 
 ## Exercice 1 :
