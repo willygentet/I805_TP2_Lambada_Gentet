@@ -1,5 +1,7 @@
 package fr.usmb.m1isc.compilation.tp;
 
+import java.util.ArrayList;
+
 public class Node {
     private NodeType type;
     private Object value;
@@ -78,5 +80,49 @@ public class Node {
             string += this.type;
         }
         return string;
+    }
+
+    public void variables(ArrayList<String> list){
+        if(type == NodeType.AFFECTATION){
+            if(!list.contains(value)) {
+                list.add((String) value);
+            }
+        } else if (type == NodeType.POINT_VIRGULE ||
+                type == NodeType.MULT ||
+                type == NodeType.MOINS ||
+                type == NodeType.PLUS ||
+                type == NodeType.DIV){
+            fg.variables(list);
+            fd.variables(list);
+        }
+    }
+
+    public String codeAssembly() {
+        if (type == NodeType.AFFECTATION) {
+            return fd.codeAssembly() + "mov " + fg.toString() + ", eax\n";
+        } else if (type == NodeType.ENTIER || type == NodeType.IDENT) {
+            return "mov eax, " + value + "\n";
+        } else if (type == NodeType.POINT_VIRGULE) {
+            return fg.codeAssembly() + fd.codeAssembly();
+        } else {
+            // System.out.print("t : " + type + " ");
+            // c'est un opérateur
+            String str = fg.codeAssembly();
+            str += "push eax\n";
+            str += fd.codeAssembly();
+            str += "pop ebx\n";
+            if(type == NodeType.PLUS){
+                str += "add eax, ebx\n";
+            } else if(type == NodeType.MOINS){
+                str += "sub ebx, eax\nmov eax, ebx\n";
+            } else if(type == NodeType.MULT){
+                str += "mul eax, ebx\n";
+            } else if(type == NodeType.DIV){
+                str += "div ebx, eax\nmov eax, ebx\n";
+            } else {
+                System.out.println("non operateur");
+            }
+            return str;
+        }
     }
 }

@@ -58,7 +58,9 @@ program ::=
     ;
 
 // une sequence est une suite d'instructions separes par des point virgules 
-sequence ::= expression:e1 SEMI sequence:e2 {: RESULT = new Node(NodeType.POINT_VIRGULE, e1, e2); :}
+sequence ::= expression:e1 SEMI sequence:e2 {:  Node n =  new Node(NodeType.POINT_VIRGULE, e1, e2);
+                                                System.out.println(n.codeAssembly());
+                                                RESULT = n; :}
             | expression:e {: RESULT = e; :}
             |
             ;
