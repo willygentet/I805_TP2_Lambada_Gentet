@@ -2,6 +2,7 @@
 package fr.usmb.m1isc.compilation.tp;
 import java_cup.runtime.Symbol;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 /* inclusion du code */
 
@@ -35,7 +36,7 @@ parser code {:
 :};
 
 /* symboles terminaux */
-terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, NIL, ERROR; 
+terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, LT, LTE, NIL, ERROR;
 terminal Integer ENTIER;
 terminal String IDENT;
 /* non terminaux */
@@ -46,7 +47,7 @@ precedence right OR;
 precedence right AND;
 precedence right NOT;
 precedence nonassoc EGAL;
-precedence nonassoc GT, GTE;
+precedence nonassoc LT, LTE;
 precedence left PLUS, MOINS;
 precedence left MUL, DIV, MOD;
 precedence left MOINS_UNAIRE;
@@ -59,7 +60,6 @@ program ::=
 
 // une sequence est une suite d'instructions separes par des point virgules 
 sequence ::= expression:e1 SEMI sequence:e2 {:  Node n =  new Node(NodeType.POINT_VIRGULE, e1, e2);
-                                                System.out.println(n.codeAssembly());
                                                 RESULT = n; :}
             | expression:e {: RESULT = e; :}
             |
@@ -83,15 +83,15 @@ expr ::= NOT:op expr:e          {: RESULT = new Node(NodeType.NOT, e, null) ; :}
        | expr:e1 AND expr:e2    {: RESULT = new Node(NodeType.AND, e1, e2) ; :}
        | expr:e1 OR expr:e2     {: RESULT = new Node(NodeType.OR, e1, e2) ; :}
        | expr:e1 EGAL expr:e2   {: RESULT = new Node(NodeType.EGAL, e1, e2) ; :}
-       | expr:e1 GT expr:e2     {: RESULT = new Node(NodeType.GT, e1, e2) ; :}
-       | expr:e1 GTE expr:e2    {: RESULT = new Node(NodeType.GTE, e1, e2) ; :}
+       | expr:e1 LT expr:e2     {: RESULT = new Node(NodeType.LT, e1, e2) ; :}
+       | expr:e1 LTE expr:e2    {: RESULT = new Node(NodeType.LTE, e1, e2) ; :}
        | expr:e1 PLUS expr:e2   {: RESULT = new Node(NodeType.PLUS, e1, e2) ; :}
        | expr:e1 MOINS expr:e2  {: RESULT = new Node(NodeType.MOINS, e1, e2) ; :}
        | expr:e1 MUL expr:e2    {: RESULT = new Node(NodeType.MULT, e1, e2) ; :}
        | expr:e1 DIV expr:e2    {: RESULT = new Node(NodeType.DIV, e1, e2) ; :}
        | expr:e1 MOD expr:e2    {: RESULT = new Node(NodeType.MOD, e1, e2) ; :}
        | MOINS expr:e           {: RESULT = new Node(NodeType.MOINS_UNAIRE, e, null); :}
-       | OUTPUT expr:e          {: RESULT  = new Node(NodeType.OUTPUT, e); :}
+       | OUTPUT expr:e          {: RESULT  = new Node(NodeType.OUTPUT, e, null); :}
        | INPUT                  {: RESULT  = new Node(NodeType.INPUT); :}
        | NIL          {: RESULT = null; :}
        | ENTIER:n     {: RESULT = new Node(NodeType.ENTIER, n); :}

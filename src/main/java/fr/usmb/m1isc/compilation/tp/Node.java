@@ -84,45 +84,96 @@ public class Node {
 
     public void variables(ArrayList<String> list){
         if(type == NodeType.AFFECTATION){
-            if(!list.contains(value)) {
-                list.add((String) value);
+            if(!list.contains(fg.value)) {
+                list.add((String) fg.value);
             }
-        } else if (type == NodeType.POINT_VIRGULE ||
-                type == NodeType.MULT ||
-                type == NodeType.MOINS ||
-                type == NodeType.PLUS ||
-                type == NodeType.DIV){
-            fg.variables(list);
-            fd.variables(list);
+        } else{
+            if (fg != null){
+                fg.variables(list);
+            }
+            if (fd != null){
+                fd.variables(list);
+            }
         }
     }
 
     public String codeAssembly() {
+        String str;
         if (type == NodeType.AFFECTATION) {
-            return fd.codeAssembly() + "mov " + fg.toString() + ", eax\n";
+            return fd.codeAssembly() + "\tmov " + fg.toString() + ", eax\n";
         } else if (type == NodeType.ENTIER || type == NodeType.IDENT) {
-            return "mov eax, " + value + "\n";
+            return "\tmov eax, " + value + "\n";
         } else if (type == NodeType.POINT_VIRGULE) {
             return fg.codeAssembly() + fd.codeAssembly();
-        } else {
-            // System.out.print("t : " + type + " ");
-            // c'est un opérateur
-            String str = fg.codeAssembly();
-            str += "push eax\n";
+        } else if (type == NodeType.INPUT) {
+            return "\tin eax\n";
+        } else if (type == NodeType.OUTPUT) {
+            return fg.codeAssembly() + "\tout eax\n";
+        } else if(type == NodeType.MOD) {
+            str = "";
             str += fd.codeAssembly();
-            str += "pop ebx\n";
+            str += "\tpush eax\n";
+            str += fg.codeAssembly();
+            str += "\tpop ebx\n";
+            str += "\tmov ecx, eax\n\tdiv ecx, ebx\n";
+            str += "\tmul ecx, ebx\n\tsub eax, ecx\n";
+            return str;
+        } else if(type == NodeType.LT) {
+            str = "";
+            str += fg.codeAssembly();
+            str += "\tpush eax\n";
+            str += fd.codeAssembly();
+            str += "\tpop ebx\n";
+            str += "\tsub eax, ebx\n";
+            str += "\tjle faux_gt_1\n";
+            str += "\tmov eax, 1\n";
+            str += "\tjmp sortie_gt_1\n";
+            str += "faux_gt_1:\n";
+            str += "\tmov eax, 0\n";
+            str += "sortie_gt_1:\n";
+            return str;
+        } else if(type == NodeType.WHILE) {
+            str = "";
+            str += "debut_while_1:\n";
+            str += fg.codeAssembly();
+            str += "\tjz sortie_while_1\n";
+            str += fd.codeAssembly();
+            str += "\tjmp debut_while_1\n";
+            str += "sortie_while_1:\n";
+            return str;
+        } else {
+            System.out.print("t : " + type + " ");
+            // c'est un opérateur
+            str = fg.codeAssembly();
+            str += "\tpush eax\n";
+            str += fd.codeAssembly();
+            str += "\tpop ebx\n";
             if(type == NodeType.PLUS){
-                str += "add eax, ebx\n";
+                str += "\tadd eax, ebx\n";
             } else if(type == NodeType.MOINS){
-                str += "sub ebx, eax\nmov eax, ebx\n";
+                str += "\tsub ebx, eax\n\tmov eax, ebx\n";
             } else if(type == NodeType.MULT){
-                str += "mul eax, ebx\n";
+                str += "\tmul eax, ebx\n";
             } else if(type == NodeType.DIV){
-                str += "div ebx, eax\nmov eax, ebx\n";
+                str += "\tdiv ebx, eax\n\tmov eax, ebx\n";
             } else {
                 System.out.println("non operateur");
             }
             return str;
         }
+    }
+
+    public String codeMachine(){
+        String str = "DATA SEGMENT\n";
+        ArrayList<String> listVars = new ArrayList<String>();
+        variables(listVars);
+        for (int i = 0; i < listVars.size(); i++) {
+            str += listVars.get(i) + " DD\n";
+        }
+        str += "DATA ENDS\n";
+        str += "CODE SEGMENT\n";
+        str += codeAssembly();
+        str += "CODE ENDS";
+        return str;
     }
 }
